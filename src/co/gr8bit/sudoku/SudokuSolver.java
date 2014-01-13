@@ -3,34 +3,42 @@ package co.gr8bit.sudoku;
 import java.util.List;
 
 public class SudokuSolver extends DLXSolver {
-    private final List<Integer> startingRow;
+    private final int[][] grid;
 
     public SudokuSolver(SudokuMatrix matrix, List<Integer> startingRow) {
         super(matrix);
 
-        this.startingRow = startingRow;
+        grid = new int[9][9];
         int col = 0;
         for (Integer val : startingRow) {
+            grid[0][col] = val;
             matrix.assign(0, col++, val);
+        }
+    }
+
+    public SudokuSolver(SudokuMatrix matrix, int[][] startingGrid) {
+        super(matrix);
+        grid = startingGrid;
+        for (int row = 0; row < 9; row++) {
+            for (int col = 0; col < 9; col++) {
+                if (grid[row][col] != 0) {
+                    matrix.assign(row, col, --grid[row][col]);
+                }
+            }
         }
     }
 
     @Override
     public void printSolution() {
-        int[][] board = new int[9][9];
-        int col = 0;
-        for (Integer val : startingRow) {
-            board[0][col++] = val;
-        }
         int[] rowColNum;
         for (DLXNode rowNode : solution) {
             rowColNum = base9(rowNode.id);
-            board[rowColNum[0]][rowColNum[1]] = rowColNum[2];
+            grid[rowColNum[0]][rowColNum[1]] = rowColNum[2];
         }
 
         StringBuilder sb = new StringBuilder();
         int rowBorder = 3, colBorder = 3;
-        for (int[] row : board) {
+        for (int[] row : grid) {
             for (int val : row) {
                 sb.append(val + 1);
                 if (--colBorder > 0) {

@@ -21,13 +21,13 @@ public class SudokuMatrix extends DLXMatrix {
     public void assign(int row, int col, int num) {
         int offset = 0;
 
-        cover(columnHeaders.get(row * 9 + col));
+        cover(getColumnByIndex(row * 9 + col));
         offset += 81;
-        cover(columnHeaders.get(offset + row * 9 + num));
+        cover(getColumnByIndex(offset + row * 9 + num));
         offset += 81;
-        cover(columnHeaders.get(offset + col * 9 + num));
+        cover(getColumnByIndex(offset + col * 9 + num));
         offset += 81;
-        cover(columnHeaders.get(offset + getBox(row, col) * 9 + num));
+        cover(getColumnByIndex(offset + getBox(row, col) * 9 + num));
     }
 
     private static List<Integer> encodeConstraint(int row, int col, int num) {

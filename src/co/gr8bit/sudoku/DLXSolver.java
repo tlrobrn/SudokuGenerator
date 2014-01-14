@@ -14,8 +14,8 @@ class DLXSolver {
     }
 
     public boolean solve() {
-        boolean foundSolution;
-        DLXNode column;
+        boolean foundSolution = false;
+        DLXNode column, node;
 
         if (matrix.head.right == matrix.head) { // All columns have been covered.
             endTime = System.nanoTime();
@@ -27,16 +27,6 @@ class DLXSolver {
         }
 
         matrix.cover(column);
-        foundSolution = attemptRows(column); // Recursively cover rows and attempt to solve.
-        matrix.uncover(column);
-
-        return foundSolution;
-    }
-
-    private boolean attemptRows(DLXNode column) {
-        boolean foundSolution = false;
-        DLXNode node;
-
         for (DLXNode row : shuffleRows(column)) {
             for (node = row.right; node != row; node = node.right) {
                 matrix.cover(node.head);
@@ -55,6 +45,7 @@ class DLXSolver {
 
             solution.pop();
         }
+        matrix.uncover(column);
 
         return foundSolution;
     }

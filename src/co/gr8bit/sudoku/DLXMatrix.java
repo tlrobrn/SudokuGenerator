@@ -1,16 +1,13 @@
 package co.gr8bit.sudoku;
 
-import java.util.ArrayList;
 import java.util.List;
 
 class DLXMatrix {
     final DLXNode head;
     protected int numRows, numColumns;
-    protected List<DLXNode> columnHeaders;
 
     public DLXMatrix(int columns) {
         head = new DLXNode();
-        columnHeaders = new ArrayList<>(columns);
         for (; columns > 0; columns--) {
             addColumn();
         }
@@ -20,7 +17,6 @@ class DLXMatrix {
         head.left.right = new DLXNode(head.left, head);
         head.left.right.id = numColumns++;
         head.left = head.left.right;
-        columnHeaders.add(head.left);
     }
 
     public void addRow(List<Integer> columns) {
@@ -71,6 +67,16 @@ class DLXMatrix {
         } while (index != 0);
 
         return node;
+    }
+
+    DLXNode getColumnByIndex(int index) throws IndexOutOfBoundsException {
+        for (DLXNode node = head.right; node != head && node.id <= index; node = node.right) {
+            if (node.id == index) {
+                return node;
+            }
+        }
+
+        throw new IndexOutOfBoundsException("Column " + index + " is not reachable or does not exist.");
     }
 
     public void cover(DLXNode node) {

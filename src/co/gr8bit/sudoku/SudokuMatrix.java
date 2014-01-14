@@ -12,8 +12,6 @@ public class SudokuMatrix extends DLXMatrix {
         for (int row = 0; row < 9; row++) {
             for (int col = 0; col < 9; col++) {
                 for (int num = 0; num < 9; num++) {
-                    int x = row * 81 + col * 9 + num;
-                    if (x != numRows) System.out.println(x);
                     addRow(encodeConstraint(row, col, num));
                 }
             }
@@ -23,17 +21,17 @@ public class SudokuMatrix extends DLXMatrix {
     public void assign(int row, int col, int num) {
         int offset = 0;
 
-        cover(getColumnByIndex(row * 9 + col));
+        cover(columnHeaders.get(row * 9 + col));
         offset += 81;
-        cover(getColumnByIndex(offset + row * 9 + num));
+        cover(columnHeaders.get(offset + row * 9 + num));
         offset += 81;
-        cover(getColumnByIndex(offset + col * 9 + num));
+        cover(columnHeaders.get(offset + col * 9 + num));
         offset += 81;
-        cover(getColumnByIndex(offset + getBox(row, col) * 9 + num));
+        cover(columnHeaders.get(offset + getBox(row, col) * 9 + num));
     }
 
     private static List<Integer> encodeConstraint(int row, int col, int num) {
-        List<Integer> assignment = new LinkedList<Integer>();
+        List<Integer> assignment = new LinkedList<>();
         int offset = 0;
 
         assignment.add(row * 9 + col);

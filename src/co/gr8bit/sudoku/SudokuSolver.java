@@ -1,16 +1,21 @@
 package co.gr8bit.sudoku;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 public class SudokuSolver extends DLXSolver {
     private final int[][] grid;
 
-    public SudokuSolver(SudokuMatrix matrix, List<Integer> startingRow) {
+    public SudokuSolver(SudokuMatrix matrix) {
         super(matrix);
+        List<Integer> fullRow = new ArrayList<>(Arrays.asList(0, 1, 2, 3, 4, 5, 6, 7, 8));
+        Collections.shuffle(fullRow);
 
         grid = new int[9][9];
         int col = 0;
-        for (Integer val : startingRow) {
+        for (Integer val : fullRow) {
             grid[0][col] = val;
             matrix.assign(0, col++, val);
         }

@@ -9,7 +9,7 @@ class DLXSolver {
 
     public DLXSolver(DLXMatrix matrix) {
         this.matrix = matrix;
-        solution = new LinkedList<DLXNode>();
+        solution = new ArrayDeque<>();
         startTime = System.nanoTime();
     }
 
@@ -51,7 +51,7 @@ class DLXSolver {
     }
 
     private List<DLXNode> shuffleRows(DLXNode column) {
-        List<DLXNode> rows = new ArrayList<DLXNode>(column.nodes);
+        List<DLXNode> rows = new ArrayList<>(column.nodes);
         for (DLXNode row = column.down; row != column; row = row.down) {
             rows.add(row);
         }

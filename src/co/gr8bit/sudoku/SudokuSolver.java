@@ -61,7 +61,6 @@ public class SudokuSolver extends DLXSolver {
         }
 
         System.out.println(sb.toString());
-        System.out.println("Solved in " + (endTime - startTime) / 1000000000.0 + " seconds.");
     }
 
     public static int[] base9(int number) {

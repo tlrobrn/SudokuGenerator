@@ -1,5 +1,7 @@
 package co.gr8bit.sudoku;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 class DLXMatrix {
@@ -19,15 +21,12 @@ class DLXMatrix {
         head.left = head.left.right;
     }
 
-    public void addRow(List<Integer> columns) {
-        DLXNode header, curr, prev, first;
-
+    public void addRow(int[] columns) {
+        DLXNode curr, prev, first;
         curr = new DLXNode();
-        first = (prev = curr);
+        first = prev = curr;
 
-        for (Integer column : columns) {
-            header = getColumn(column);
-
+        for (DLXNode header : getColumnsByIDs(columns)) {
             curr.down = header;
             curr.up = header.up;
             curr.left = prev;
@@ -48,35 +47,33 @@ class DLXMatrix {
         numRows++;
     }
 
-    DLXNode getColumn(int index) throws IndexOutOfBoundsException {
-        if (index >= 0) index++;
-
-        DLXNode node = head;
-        do {
-            if (index > 0) {
-                node = node.right;
-                index--;
-            } else if (index < 0) {
-                node = node.left;
-                index++;
-            }
-
-            if (node == head) {
-                throw new IndexOutOfBoundsException("Column index out of bounds");
-            }
-        } while (index != 0);
-
-        return node;
-    }
-
-    DLXNode getColumnByIndex(int index) throws IndexOutOfBoundsException {
-        for (DLXNode node = head.right; node != head && node.id <= index; node = node.right) {
-            if (node.id == index) {
+    DLXNode getColumnByID(int id) throws IndexOutOfBoundsException {
+        for (DLXNode node = head.right; node != head && node.id <= id; node = node.right) {
+            if (node.id == id) {
                 return node;
             }
         }
 
-        throw new IndexOutOfBoundsException("Column " + index + " is not reachable or does not exist.");
+        throw new IndexOutOfBoundsException("Column " + id + " is not reachable or does not exist.");
+    }
+
+    List<DLXNode> getColumnsByIDs(int[] ids) throws IndexOutOfBoundsException {
+        List<DLXNode> columns = new ArrayList<>(ids.length);
+        Arrays.sort(ids);
+        int index = 0;
+
+        for (DLXNode node = head.right; node != head && index < ids.length; node = node.right) {
+            if (node.id == ids[index]) {
+                columns.add(node);
+                index++;
+            }
+        }
+
+        if (index < ids.length) {
+            throw new IndexOutOfBoundsException("Column " + ids[index] + " is not reachable or does not exist.");
+        }
+
+        return columns;
     }
 
     public void cover(DLXNode node) {

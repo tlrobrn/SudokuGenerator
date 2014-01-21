@@ -4,41 +4,40 @@ import java.util.*;
 
 class DLXSolver {
     private final DLXMatrix matrix;
-    protected final Deque<DLXNode> solution;
-    protected long startTime, endTime;
+    protected Deque<DLXNode> solution;
 
     public DLXSolver(DLXMatrix matrix) {
         this.matrix = matrix;
         solution = new ArrayDeque<>();
-        startTime = System.nanoTime();
     }
 
-    public boolean solve() {
+    public List<DLXNode> solve() {
+        if (solution.size() > 0 || singleSolve()) {
+            return new ArrayList<>(solution);
+        }
+
+        return null;
+    }
+
+    protected boolean singleSolve() {
         boolean foundSolution = false;
-        DLXNode column, node;
+        DLXNode column;
 
         if (matrix.head.right == matrix.head) { // All columns have been covered.
-            endTime = System.nanoTime();
             return true;
         }
         if ((column = matrix.sparsestColumn()) == null) { // Remaining columns cannot be covered.
-            endTime = System.nanoTime();
             return false;
         }
 
         matrix.cover(column);
         for (DLXNode row : shuffleRows(column)) {
-            for (node = row.right; node != row; node = node.right) {
-                matrix.cover(node.head);
-            }
-            solution.push(node);
+            solution.push(row);
+            pruneMatrix(row);
 
-            foundSolution = solve();
+            foundSolution = singleSolve();
 
-            for (node = row.right; node != row; node = node.right) {
-                matrix.uncover(node.head);
-            }
-
+            unpruneMatrix(row);
             if (foundSolution) {
                 break;
             }
@@ -50,7 +49,58 @@ class DLXSolver {
         return foundSolution;
     }
 
-    private List<DLXNode> shuffleRows(DLXNode column) {
+    public boolean hasMultipleSolutions() {
+        if (solve() == null) {
+            return false;
+        }
+        boolean foundSecondSolution = false;
+        Deque<DLXNode> prevSolution = solution;
+        Deque<DLXNode> original = new ArrayDeque<>(solution);
+        DLXNode row;
+
+        while (!foundSecondSolution && !prevSolution.isEmpty()) {
+            row = prevSolution.pop();
+            removeRow(row);
+            solution = new ArrayDeque<>(prevSolution);
+            foundSecondSolution = singleSolve();
+            restoreRow(row);
+        }
+        solution = original;
+
+        return foundSecondSolution;
+    }
+
+    protected void restoreRow(DLXNode row) {
+        DLXNode node = row;
+        do {
+            node.up.down = node;
+            node.down.up = node;
+            node = node.right;
+        } while (node != row);
+    }
+
+    protected void removeRow(DLXNode row) {
+        DLXNode node = row;
+        do {
+            node.up.down = node.down;
+            node.down.up = node.up;
+            node = node.right;
+        } while (node != row);
+    }
+
+    private void unpruneMatrix(DLXNode row) {
+        for (DLXNode node = row.right; node != row; node = node.right) {
+            matrix.uncover(node.head);
+        }
+    }
+
+    private void pruneMatrix(DLXNode row) {
+        for (DLXNode node = row.right; node != row; node = node.right) {
+            matrix.cover(node.head);
+        }
+    }
+
+    private static List<DLXNode> shuffleRows(DLXNode column) {
         List<DLXNode> rows = new ArrayList<>(column.nodes);
         for (DLXNode row = column.down; row != column; row = row.down) {
             rows.add(row);
@@ -67,6 +117,5 @@ class DLXSolver {
         }
 
         System.out.println(sb.toString());
-        System.out.println("Solved in " + (endTime - startTime) / 1000000000.0 + " seconds.");
     }
 }

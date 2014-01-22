@@ -1,9 +1,6 @@
 package co.gr8bit.sudoku;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 class SudokuSolver extends DLXSolver {
     private final List<DLXNode> context;
@@ -57,6 +54,10 @@ class SudokuSolver extends DLXSolver {
             return null;
         }
 
+        return buildBoard(rows);
+    }
+
+    private int[][] buildBoard(Collection<DLXNode> rows) {
         int[][] board = new int[9][9];
 
         int[] rowColNum;
@@ -64,18 +65,11 @@ class SudokuSolver extends DLXSolver {
             rowColNum = base9(rowNode.id);
             board[rowColNum[0]][rowColNum[1]] = rowColNum[2] + 1;
         }
-
         return board;
     }
 
     public void printSolution() {
-        int[][] grid = new int[9][9];
-        int[] rowColNum;
-        for (DLXNode rowNode : solution) {
-            rowColNum = base9(rowNode.id);
-            grid[rowColNum[0]][rowColNum[1]] = rowColNum[2] + 1;
-        }
-        printGrid(grid);
+        printGrid(buildBoard(solution));
     }
 
     void printGrid(int[][] grid) {

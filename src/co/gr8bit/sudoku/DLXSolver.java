@@ -21,21 +21,11 @@ class DLXSolver {
     }
 
     List<DLXNode> solveWithContext(List<DLXNode> context) {
-        context = new ArrayList<>(context);
         solution = new ArrayDeque<>(context);
 
-        for (DLXNode node : context) {
-            matrix.cover(node.head);
-            pruneMatrix(node);
-        }
-
+        prepareMatrix(context);
         boolean foundSolution = singleSolve(solution);
-
-        Collections.reverse(context);
-        for (DLXNode node : context) {
-            unpruneMatrix(node);
-            matrix.uncover(node.head);
-        }
+        restoreMatrix(context);
 
         return foundSolution ? new ArrayList<>(solution) : null;
     }

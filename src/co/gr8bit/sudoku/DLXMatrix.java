@@ -6,9 +6,10 @@ import java.util.List;
 
 class DLXMatrix {
     final DLXNode head;
-    protected int numRows, numColumns;
+    private int numRows;
+    private int numColumns;
 
-    public DLXMatrix(int columns) {
+    DLXMatrix(int columns) {
         head = new DLXNode();
         for (; columns > 0; columns--) {
             addColumn();
@@ -21,7 +22,7 @@ class DLXMatrix {
         head.left = head.left.right;
     }
 
-    public void addRow(int[] columns) {
+    void addRow(int[] columns) {
         DLXNode curr, prev, first;
         curr = new DLXNode();
         first = prev = curr;
@@ -140,5 +141,16 @@ class DLXMatrix {
         }
 
         return sb.toString();
+    }
+
+    public DLXNode get(int columnID, int rowID) throws IndexOutOfBoundsException {
+        DLXNode header = getColumnByID(columnID);
+        for (DLXNode row = header.down; row != header; row = row.down) {
+            if (rowID == row.id) {
+                return row;
+            }
+        }
+
+        throw new IndexOutOfBoundsException("Row " + rowID + " does not exist in column " + columnID + ".");
     }
 }

@@ -4,22 +4,43 @@ import java.util.*;
 
 class DLXSolver {
     private final DLXMatrix matrix;
-    protected Deque<DLXNode> solution;
+    Deque<DLXNode> solution;
 
-    public DLXSolver(DLXMatrix matrix) {
+    DLXSolver(DLXMatrix matrix) {
         this.matrix = matrix;
-        solution = new ArrayDeque<>();
+        solution = null;
     }
 
-    public List<DLXNode> solve() {
-        if (solution.size() > 0 || singleSolve()) {
+    List<DLXNode> solve() {
+        if (solution != null) {
             return new ArrayList<>(solution);
         }
 
-        return null;
+        solution = new ArrayDeque<>();
+        return singleSolve(solution) ? new ArrayList<>(solution) : null;
     }
 
-    protected boolean singleSolve() {
+    List<DLXNode> solveWithContext(List<DLXNode> context) {
+        context = new ArrayList<>(context);
+        solution = new ArrayDeque<>(context);
+
+        for (DLXNode node : context) {
+            matrix.cover(node.head);
+            pruneMatrix(node);
+        }
+
+        boolean foundSolution = singleSolve(solution);
+
+        Collections.reverse(context);
+        for (DLXNode node : context) {
+            unpruneMatrix(node);
+            matrix.uncover(node.head);
+        }
+
+        return foundSolution ? new ArrayList<>(solution) : null;
+    }
+
+    boolean singleSolve(Deque<DLXNode> solution) {
         boolean foundSolution = false;
         DLXNode column;
 
@@ -35,7 +56,7 @@ class DLXSolver {
             solution.push(row);
             pruneMatrix(row);
 
-            foundSolution = singleSolve();
+            foundSolution = singleSolve(solution);
 
             unpruneMatrix(row);
             if (foundSolution) {
@@ -49,28 +70,53 @@ class DLXSolver {
         return foundSolution;
     }
 
-    public boolean hasMultipleSolutions() {
-        if (solve() == null) {
-            return false;
+    List<DLXNode> uniqueDescription() {
+        List<DLXNode> solutionRows = solve();
+        if (solutionRows == null) {
+            return null;
         }
-        boolean foundSecondSolution = false;
-        Deque<DLXNode> prevSolution = solution;
-        Deque<DLXNode> original = new ArrayDeque<>(solution);
+
+        List<DLXNode> uniqueGrid = new ArrayList<>();
+        Deque<DLXNode> givenSolution = new ArrayDeque<>(solutionRows);
+        boolean foundSecondSolution;
         DLXNode row;
 
-        while (!foundSecondSolution && !prevSolution.isEmpty()) {
-            row = prevSolution.pop();
+        while (!givenSolution.isEmpty()) {
+            row = givenSolution.pop();
             removeRow(row);
-            solution = new ArrayDeque<>(prevSolution);
-            foundSecondSolution = singleSolve();
-            restoreRow(row);
-        }
-        solution = original;
+            prepareMatrix(givenSolution);
+            prepareMatrix(uniqueGrid);
 
-        return foundSecondSolution;
+            foundSecondSolution = singleSolve(new ArrayDeque<>(givenSolution));
+            restoreMatrix(uniqueGrid);
+            restoreMatrix(givenSolution);
+            restoreRow(row);
+
+            if (foundSecondSolution) {
+                uniqueGrid.add(row);
+            }
+        }
+
+        return uniqueGrid;
     }
 
-    protected void restoreRow(DLXNode row) {
+    void prepareMatrix(Collection<DLXNode> collection) {
+        for (DLXNode node : collection) {
+            matrix.cover(node.head);
+            pruneMatrix(node);
+        }
+    }
+
+    void restoreMatrix(Collection<DLXNode> collection) {
+        List<DLXNode> list = new ArrayList<>(collection);
+        Collections.reverse(list);
+        for (DLXNode node : list) {
+            unpruneMatrix(node);
+            matrix.uncover(node.head);
+        }
+    }
+
+    void restoreRow(DLXNode row) {
         DLXNode node = row;
         do {
             node.up.down = node;
@@ -79,7 +125,7 @@ class DLXSolver {
         } while (node != row);
     }
 
-    protected void removeRow(DLXNode row) {
+    void removeRow(DLXNode row) {
         DLXNode node = row;
         do {
             node.up.down = node.down;
@@ -110,12 +156,4 @@ class DLXSolver {
         return rows;
     }
 
-    public void printSolution() {
-        StringBuilder sb = new StringBuilder("Solution:\n");
-        for (DLXNode node : solution) {
-            sb.append("Row ").append(node.id).append('\n');
-        }
-
-        System.out.println(sb.toString());
-    }
 }

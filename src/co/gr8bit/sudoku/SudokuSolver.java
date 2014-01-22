@@ -5,47 +5,85 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-public class SudokuSolver extends DLXSolver {
-    private final int[][] grid;
+class SudokuSolver extends DLXSolver {
+    private final List<DLXNode> context;
 
     public SudokuSolver(SudokuMatrix matrix) {
         super(matrix);
         List<Integer> fullRow = new ArrayList<>(Arrays.asList(0, 1, 2, 3, 4, 5, 6, 7, 8));
         Collections.shuffle(fullRow);
 
-        grid = new int[9][9];
-        int col = 0;
-        for (Integer val : fullRow) {
-            grid[0][col] = val;
-            matrix.assign(0, col++, val);
+        context = new ArrayList<>(9);
+        int value, rowID, colID;
+        for (int col = 0; col < fullRow.size(); col++) {
+            value = fullRow.get(col);
+            rowID = col * 9 + value;
+            colID = SudokuMatrix.encodeConstraint(0, col, value)[0];
+            context.add(matrix.get(colID, rowID));
         }
     }
 
-    public SudokuSolver(SudokuMatrix matrix, int[][] startingGrid) {
+    public SudokuSolver(SudokuMatrix matrix, String startingGrid) {
         super(matrix);
-        grid = startingGrid;
-        for (int row = 0; row < 9; row++) {
-            for (int col = 0; col < 9; col++) {
-                if (grid[row][col] != 0) {
-                    matrix.assign(row, col, --grid[row][col]);
-                }
+        context = new ArrayList<>();
+        int value, row = 0, col = 0, rowID, colID;
+        for (char valChar : startingGrid.toCharArray()) {
+            value = Character.getNumericValue(valChar) - 1;
+            if (value >= 0) {
+                rowID = row * 81 + col * 9 + value;
+                colID = SudokuMatrix.encodeConstraint(row, col, value)[0];
+                context.add(matrix.get(colID, rowID));
+            }
+            col++;
+            if (col == 9) {
+                col = 0;
+                row++;
             }
         }
     }
 
     @Override
+    public List<DLXNode> solve() {
+        if (solution == null) {
+            return solveWithContext(context);
+        }
+
+        return super.solve();
+    }
+
+    public int[][] uniqueGrid() {
+        List<DLXNode> rows = uniqueDescription();
+        if (rows == null) {
+            return null;
+        }
+
+        int[][] board = new int[9][9];
+
+        int[] rowColNum;
+        for (DLXNode rowNode : rows) {
+            rowColNum = base9(rowNode.id);
+            board[rowColNum[0]][rowColNum[1]] = rowColNum[2] + 1;
+        }
+
+        return board;
+    }
+
     public void printSolution() {
+        int[][] grid = new int[9][9];
         int[] rowColNum;
         for (DLXNode rowNode : solution) {
             rowColNum = base9(rowNode.id);
-            grid[rowColNum[0]][rowColNum[1]] = rowColNum[2];
+            grid[rowColNum[0]][rowColNum[1]] = rowColNum[2] + 1;
         }
+        printGrid(grid);
+    }
 
+    void printGrid(int[][] grid) {
         StringBuilder sb = new StringBuilder();
         int rowBorder = 3, colBorder = 3;
         for (int[] row : grid) {
             for (int val : row) {
-                sb.append(val + 1);
+                sb.append(val);
                 if (--colBorder > 0) {
                     sb.append(' ');
                 } else {
@@ -63,7 +101,7 @@ public class SudokuSolver extends DLXSolver {
         System.out.println(sb.toString());
     }
 
-    public static int[] base9(int number) {
+    private static int[] base9(int number) {
         int[] digits = new int[3];
         for (int i = 2; i >= 0; number = number / 9, i--) {
             digits[i] = number % 9;

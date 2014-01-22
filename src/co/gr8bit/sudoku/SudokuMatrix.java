@@ -1,6 +1,6 @@
 package co.gr8bit.sudoku;
 
-public class SudokuMatrix extends DLXMatrix {
+class SudokuMatrix extends DLXMatrix {
     private static final int constraints = 324;
 
     public SudokuMatrix() {
@@ -15,13 +15,7 @@ public class SudokuMatrix extends DLXMatrix {
         }
     }
 
-    public void assign(int row, int col, int num) {
-        for (DLXNode column : getColumnsByIDs(encodeConstraint(row, col, num))) {
-            cover(column);
-        }
-    }
-
-    private static int[] encodeConstraint(int row, int col, int num) {
+    public static int[] encodeConstraint(int row, int col, int num) {
         int[] assignment = new int[4];
         int offset = 0;
         int i = 0;
